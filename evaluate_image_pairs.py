@@ -23,16 +23,35 @@ padding = (8,8)
 locations = ((10,20),)
 hog = cv2.HOGDescriptor(winSize,blockSize,blockStride,cellSize,nbins,derivAperture,winSigma,
                         histogramNormType,L2HysThreshold,gammaCorrection,nlevels)
-#compute(img[, winStride[, padding[, locations]]]) -> descriptors
-
-# time it
 
 outdir='images/'
 root='https://upload.wikimedia.org/wikipedia/commons/thumb/'
 filename_good='correctpairs.csv'
 filename_bad='wrongpairs.csv'
 
-
+def extract_features(featurename,img):
+    '''
+    input: string of method for feature extraction
+           numpy array of bgr images
+    output: if the method is 'hsvHistogram' or 'rgbHistogram',
+            the output would be a list of 256 long
+            if the method is 'hog',
+            the output would be a list
+    '''
+    if featurename == 'hsvHistogram':
+        hsv = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
+        color = ('b','g','r')
+        for i,col in enumerate(color):
+            hist = cv2.calcHist([img],[i],None,[256],[0,256])
+        return hist/3.0
+    elif featurename = 'rgbHistogram':
+        color = ('b','g','r')
+        for i,col in enumerate(color):
+            hist = cv2.calcHist([img],[i],None,[256],[0,256])
+        return hist/3.0
+    elif featurename = 'hog':
+        hist = hog.compute(img1,winStride,padding,locations)
+        return hist
 
 def download_image(filename):
 #this function downloads an image from the commons repository
@@ -45,7 +64,7 @@ def download_image(filename):
 	url=root+first+'/'+second+'/'+filename+'/600px-'+filename
 	urllib.urlretrieve(url, outdir+filename)
 
-def evaluate_distance(imagename1,imagename2):
+def evaluate_distance(imagename1,imagename2,featurename):
 	#downloadImage(img1)
 	#downloadImage(img2)
 	filename1=outdir+imagename1
@@ -59,15 +78,15 @@ def evaluate_distance(imagename1,imagename2):
 	if img1 is None or img2 is None:
 		return None
 	#compute hog
-	hist1 = hog.compute(img1,winStride,padding,locations)
-	hist2 = hog.compute(img2,winStride,padding,locations)
+	hist1 = extract_features(featurename,img1)
+	hist2 = extract_features(featurename,img2)
 	#compute distance
 	#dist=cosine_similarity(hist1,hist2)
 	dist=pearsonr(hist1,hist2)
 	correlation=0 if np.isnan(dist[0]) else dist[0]
 	return correlation
 
-def read_file_and_compute(filename):
+def read_file_and_compute(filename,featurename):
 	distances=[]
 	count=0
 	with open(filename) as f:
@@ -75,7 +94,7 @@ def read_file_and_compute(filename):
 			row=line[:-1].split('\t')
 			img1=row[1]
 			img2=row[2]
-			d=evaluate_distance(img1,img2)
+			d=evaluate_distance(img1,img2,featurename)
 			if d is not None:
 				distances.append(d)
 			else:
@@ -83,12 +102,28 @@ def read_file_and_compute(filename):
 				print count
 	return distances
 
-distances_good=read_file_and_compute(filename_good)
-distances_bad=read_file_and_compute(filename_bad)
+def parse_args():
+    '''
+    Parse input arguments
+    '''
+    parser = argparse.ArgumentParser(description=
+    'Build overlapping ratio matrix for all Roadmap features.')
+    parser.add_argument('--feature', dest='featurename',
+                        help='features to use for classifying the images, \n'+\
+                             'options being hog, rgbHistogram, hsvHistogram'
+                        default=None, type=str)
+    return args
 
-print 'good'+str(np.mean(np.asarray(distances_good)))
+if __main__ is '__main__':
 
-print 'bad'+str(np.mean(np.asarray(distances_bad)))
+    args = parse_args()
 
+    print 'Called with args:\n'
+    print args
 
+    distances_good=read_file_and_compute(filename_good,args.featurename)
+    distances_bad=read_file_and_compute(filename_bad,args.featurename)
 
+    print 'good'+str(np.mean(np.asarray(distances_good)))
+
+    print 'bad'+str(np.mean(np.asarray(distances_bad)))
