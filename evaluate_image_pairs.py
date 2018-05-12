@@ -41,10 +41,10 @@ def extract_features(featurename,img):
     '''
     if featurename == 'hsvHistogram':
         hsv = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
-        color = ('b','g','r')
-        for i,col in enumerate(color):
-            hist = cv2.calcHist([img],[i],None,[256],[0,256])
-        return hist/3.0
+        hist = []
+        for i in range(3):
+            hist.append(cv2.calcHist([img],[i],None,[256],[0,256]))
+        return hist[1]
     elif featurename = 'rgbHistogram':
         color = ('b','g','r')
         for i,col in enumerate(color):
