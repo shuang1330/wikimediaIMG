@@ -91,7 +91,7 @@ def evaluate_distance(imagename1,imagename2,color_channel,featurename):
 	correlation=0 if np.isnan(dist[0]) else dist[0]
 	return correlation
 
-def read_file_and_compute(filename,featurename):
+def read_file_and_compute(filename,featurename,color_channel):
 	distances=[]
 	count=0
 	with open(filename) as f:
@@ -99,7 +99,7 @@ def read_file_and_compute(filename,featurename):
 			row=line[:-1].split('\t')
 			img1=row[1]
 			img2=row[2]
-			d=evaluate_distance(img1,img2,featurename)
+			d=evaluate_distance(img1,img2,color_channel,featurename)
 			if d is not None:
 				distances.append(d)
 			else:
@@ -129,8 +129,8 @@ if __main__ is '__main__':
     print 'Called with args:\n'
     print args
 
-    distances_good=read_file_and_compute(filename_good,args.featurename)
-    distances_bad=read_file_and_compute(filename_bad,args.featurename)
+    distances_good=read_file_and_compute(filename_good,args.featurename,args.color_channel)
+    distances_bad=read_file_and_compute(filename_bad,args.featurename,args.color_channel)
 
     print 'good'+str(np.mean(np.asarray(distances_good)))
 
