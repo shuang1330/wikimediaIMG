@@ -86,8 +86,8 @@ def evaluate_distance(imagename1,imagename2):
 	#compute hog
 	hist1 = hog.compute(img1,winStride,padding,locations)
 	hist2 = hog.compute(img2,winStride,padding,locations)
-	#compute distance
-	#dist=cosine_similarity(hist1,hist2)
+	# compute distance
+	# dist=cosine_similarity(hist1,hist2)
 	dist=pearsonr(hist1,hist2)
 	correlation=0 if np.isnan(dist[0]) else dist[0]
 	return correlation

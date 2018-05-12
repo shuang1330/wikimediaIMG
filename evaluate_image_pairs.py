@@ -21,8 +21,9 @@ nlevels = 64
 winStride = (8,8)
 padding = (8,8)
 locations = ((10,20),)
-hog = cv2.HOGDescriptor(winSize,blockSize,blockStride,cellSize,nbins,derivAperture,winSigma,
-                        histogramNormType,L2HysThreshold,gammaCorrection,nlevels)
+hog = cv2.HOGDescriptor(winSize,blockSize,blockStride,cellSize,nbins,
+                        derivAperture,winSigma,histogramNormType,L2HysThreshold,
+                        gammaCorrection,nlevels)
 
 outdir='images/'
 root='https://upload.wikimedia.org/wikipedia/commons/thumb/'
@@ -64,15 +65,19 @@ def download_image(filename):
 	url=root+first+'/'+second+'/'+filename+'/600px-'+filename
 	urllib.urlretrieve(url, outdir+filename)
 
-def evaluate_distance(imagename1,imagename2,featurename):
+def evaluate_distance(imagename1,imagename2,color_channel,featurename):
 	#downloadImage(img1)
 	#downloadImage(img2)
 	filename1=outdir+imagename1
 	filename2=outdir+imagename2
 	#read images
 	try:
-		img1 = cv2.imread(filename1,0)
-		img2 = cv2.imread(filename2,0)
+        if color_channel is 'gray':
+            img1 = cv2.imread(filename1,0)
+            img2 = cv2.imread(filename2,0)
+        if color_channel is 'color':
+            img1 = cv2.imread(filename1,cv2.IMREAD_COLOR).astype(np.uint8)
+            img2 = cv2.imread(filename1,cv2.IMREAD_COLOR).astype(np.uint8)
 	except:
 		return None
 	if img1 is None or img2 is None:
@@ -108,6 +113,9 @@ def parse_args():
     '''
     parser = argparse.ArgumentParser(description=
     'Build overlapping ratio matrix for all Roadmap features.')
+    parser.add_argument('--color', dest='color_channel',
+                        help='color channel to use, either gray or color'
+                        default=None, type=str)
     parser.add_argument('--feature', dest='featurename',
                         help='features to use for classifying the images, \n'+\
                              'options being hog, rgbHistogram, hsvHistogram'
