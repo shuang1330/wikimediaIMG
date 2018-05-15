@@ -4,7 +4,7 @@ import cv2
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 from scipy.stats import pearsonr
-from matplotlib import pyplot
+# from matplotlib import pyplot
 
 #HOG parameters
 winSize = (32,32)
